@@ -31,7 +31,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer variableDB.Close()
+	defer func(variableDB *sql.DB) {
+		err := variableDB.Close()
+		if err != nil {
+
+		}
+	}(variableDB)
 
 	_, err = variableDB.Exec(`CREATE TABLE IF NOT EXISTS variable (id INTEGER PRIMARY KEY, file_name TEXT, variable_name TEXT, data TEXT)`)
 	if err != nil {
@@ -83,12 +88,18 @@ func main() {
 				apiError.Query2 = query.Get("variable_name")
 				apiError.Error = err.Error()
 				apiError.Message = "Not found"
-				json.NewEncoder(res).Encode(apiError)
+				err := json.NewEncoder(res).Encode(apiError)
+				if err != nil {
+					return
+				}
 				return
 			}
 
 			res.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(res).Encode(data)
+			err = json.NewEncoder(res).Encode(data)
+			if err != nil {
+				return
+			}
 			if err != nil {
 				http.Error(res, "Error sending variable to client", http.StatusInternalServerError)
 				return
