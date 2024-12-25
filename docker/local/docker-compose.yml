@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  application:
+    container_name: ${COMPOSE_PROJECT_NAME}_log
+    build:
+      context: ../../application/
+      dockerfile: ../docker/local/Dockerfile
+      args:
+        PORT: ${PORT:-3000}
+    volumes:
+      - ../../application:/app
+    ports:
+      - ${PORT:-8080}:8080
+    env_file:
+      - .env
+    restart: always
